@@ -220,7 +220,8 @@ class BankingNotificationApp {
           // Parse thông tin giao dịch
           const transactionData = emailParser.parseTransactionEmail(email.htmlContent);
 
-          if (transactionData) {
+          // Bỏ qua giao dịch chuyển đi (số âm)
+          if (transactionData && !(typeof transactionData.soTienNumber === 'number' && transactionData.soTienNumber < 0)) {
             // Lưu vào database
             const savedTransaction = await databaseService.saveTransaction(
               transactionData,
@@ -232,6 +233,8 @@ class BankingNotificationApp {
               successCount++;
               logger.info(`Transaction processed: ${transactionData.maGiaoDich}`);
             }
+          } else if (transactionData && transactionData.soTienNumber < 0) {
+            logger.info(`Skipping outgoing transfer (negative amount): ${transactionData.maGiaoDich}`);
           } else {
             logger.warn(`Failed to parse transaction from email: ${email.id}`);
             errorCount++;

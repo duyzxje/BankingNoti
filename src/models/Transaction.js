@@ -14,13 +14,15 @@ const transactionSchema = new mongoose.Schema({
   },
   tenNguoiChuyen: {
     type: String,
-    required: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: null
   },
   nganHangChuyen: {
     type: String,
-    required: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: null
   },
 
   // Thông tin giao dịch
@@ -49,8 +51,9 @@ const transactionSchema = new mongoose.Schema({
   },
   phiGiaoDich: {
     type: String,
-    required: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: ''
   },
   phiGiaoDichNumber: {
     type: Number,

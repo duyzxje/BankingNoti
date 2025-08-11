@@ -7,8 +7,8 @@ class EmailParser {
     this.fieldMappings = {
       taiKhoanNhan: ['Tài khoản nhận', 'Tai khoan nhan'],
       taiKhoanChuyen: ['Tài khoản chuyển', 'Tai khoan chuyen'],
-      tenNguoiChuyen: ['Tên người chuyển', 'Ten nguoi chuyen'],
-      nganHangChuyen: ['Ngân hàng chuyển', 'Ngan hang chuyen'],
+      tenNguoiChuyen: ['Tên người chuyển', 'Ten nguoi chuyen', 'Tên người nhận', 'Ten nguoi nhan'],
+      nganHangChuyen: ['Ngân hàng chuyển', 'Ngan hang chuyen', 'Ngân hàng nhận', 'Ngan hang nhan'],
       loaiGiaoDich: ['Loại giao dịch', 'Loai giao dich'],
       maGiaoDich: ['Mã giao dịch', 'Ma giao dich'],
       ngayGioGiaoDich: ['Ngày giờ giao dịch', 'Ngay gio giao dich'],
@@ -148,6 +148,11 @@ class EmailParser {
       formatted.soTienNumber = this.parseAmount(formatted.soTien);
     }
 
+    // Nếu là giao dịch chuyển đi (số âm) thì bỏ qua
+    if (typeof formatted.soTienNumber === 'number' && formatted.soTienNumber < 0) {
+      return null;
+    }
+
     // Parse phí giao dịch
     if (formatted.phiGiaoDich) {
       formatted.phiGiaoDichNumber = this.parseAmount(formatted.phiGiaoDich);
@@ -156,6 +161,14 @@ class EmailParser {
     // Parse ngày giờ
     if (formatted.ngayGioGiaoDich) {
       formatted.ngayGioGiaoDichDate = this.parseDateTime(formatted.ngayGioGiaoDich);
+    }
+
+    // Chuẩn hoá các trường có thể thiếu trong một số template email
+    if (!formatted.nganHangChuyen) {
+      formatted.nganHangChuyen = null;
+    }
+    if (!formatted.tenNguoiChuyen) {
+      formatted.tenNguoiChuyen = null;
     }
 
     return formatted;
@@ -216,14 +229,14 @@ class EmailParser {
    * @returns {boolean} True nếu hợp lệ
    */
   isValidTransaction(data) {
-    const requiredFields = [
-      'taiKhoanNhan',
-      'taiKhoanChuyen',
-      'maGiaoDich',
-      'soTien'
-    ];
+    if (!data) return false;
 
-    return requiredFields.every(field => data[field] && data[field].toString().trim() !== '');
+    const requiredFields = ['taiKhoanNhan', 'taiKhoanChuyen', 'maGiaoDich', 'soTien'];
+    const hasCoreFields = requiredFields.every(field => data[field] && data[field].toString().trim() !== '');
+    if (!hasCoreFields) return false;
+
+    // Cho phép thiếu `nganHangChuyen` và `tenNguoiChuyen`
+    return true;
   }
 }
 
